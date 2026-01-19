@@ -81,7 +81,8 @@ void startWiFiManager() {
         Serial << beginl << yellow << "started config portal in AP mode, IP: " << WiFi.softAPIP() << DI::endl;
         led.setState(LEDControl::LED_FLASH_FAST);
     } else {
-        Serial << beginl << green << "connected to Wi-Fi with IP: " << WiFi.localIP() << DI::endl;
+        Serial << beginl << green << "started config portal with Wi-Fi connection, IP: " << WiFi.localIP() << DI::endl;
+        wm.startWebPortal();
     }
 }
 
