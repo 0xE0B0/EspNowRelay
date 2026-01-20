@@ -5,8 +5,19 @@
 #include <espnow.h>
 #include <WiFiManager.h>
 
+#define STRINGIFY(x) #x
+#define STRINGIFY_EXP(x) STRINGIFY(x)
+
 // WiFi manager for OTA update and WiFi configuration
 WiFiManager wm;
+
+// Firmware version info for web portal
+WiFiManagerParameter fwInfo("<p>Firmware Version: v"
+    STRINGIFY_EXP(REL_VERSION_MAJOR) "." STRINGIFY_EXP(REL_VERSION_MINOR) "." STRINGIFY_EXP(REL_VERSION_SUB)
+    "<br>Build time: " __TIMESTAMP__ "</p>");
+
+// Access point name
+static constexpr const char* APName = "ESP-NOW-Relay_AP";
 
 // Status LED
 LEDControl led(LED_BUILTIN, true);
@@ -16,9 +27,6 @@ static constexpr uint8_t RELAY_PIN = D1;
 
 // Button pin to trigger OTA update mode
 static constexpr uint8_t BUTTON_PIN = D2;
-
-// Access point name
-static constexpr const char* APName = "ESP-NOW-Relay_AP";
 
 // Magic key to identify datagrams
 static constexpr uint32_t MAGIC_KEY = 0xDEADBEEF;
@@ -71,11 +79,17 @@ void startEspNowDevice() {
         led.setState(LEDControl::LED_OFF);
     }
 }
+
 // Wi-Fi manager + OTA update mode
 void startWiFiManager() {
     WiFi.mode(WIFI_STA);
     wm.setConfigPortalBlocking(false);
     wm.setConfigPortalTimeout(60);
+    wm.setClass("invert");  // dark theme
+
+    // Add firmware details as custom param to web portal
+    wm.addParameter(&fwInfo);
+
     bool res = wm.autoConnect(APName);
     if (!res) {
         Serial << beginl << yellow << "started config portal in AP mode, IP: " << WiFi.softAPIP() << DI::endl;
